@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="给孩子看的希腊众神互动图：家谱、三界、谁管什么、小测验">
+<title>奥林匹斯众神家谱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;900&display=swap">
+<style>
+/* Layout: marble page, a big clickable family tree with a detail card, then the three realms, a "who does what" grid, and a small quiz. */
+:root{
+  --bg:#eef2f6; --surface:#ffffff; --ink:#15203a; --muted:#5a6680; --line:#c6cfdd; --faint:#e3e8ef;
+  --aegean:#1d5fa6; --gold:#a8771f; --rose:#c2456b;
+  --c-pri:#6b5ca5; --c-titan:#8a6435; --c-oly:#1d5fa6; --c-god:#24806c; --c-mate:#7c8598;
+  --sky1:#bcd8f5; --sky2:#e7f1fb; --sea1:#2f78b5; --sea2:#1a4f86; --und1:#2a2238; --und2:#120e1a;
+  --f-display:"Noto Serif SC","Songti SC",serif; --f-body:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif; --f-latin:"Cinzel","Times New Roman",serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1322; --surface:#161f35; --ink:#e6ebf4; --muted:#98a4bd; --line:#34405e; --faint:#1d2742;
+  --aegean:#74abe9; --gold:#e2b75e; --rose:#ef7c9d;
+  --c-pri:#a99ce3; --c-titan:#cfa66c; --c-oly:#74abe9; --c-god:#5cc4aa; --c-mate:#8d97ab;
+  --sky1:#2b4f7d; --sky2:#1b3352; --sea1:#174a78; --sea2:#0f3256; --und1:#1d1729; --und2:#0a0810;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1322; --surface:#161f35; --ink:#e6ebf4; --muted:#98a4bd; --line:#34405e; --faint:#1d2742;
+  --aegean:#74abe9; --gold:#e2b75e; --rose:#ef7c9d;
+  --c-pri:#a99ce3; --c-titan:#cfa66c; --c-oly:#74abe9; --c-god:#5cc4aa; --c-mate:#8d97ab;
+  --sky1:#2b4f7d; --sky2:#1b3352; --sea1:#174a78; --sea2:#0f3256; --und1:#1d1729; --und2:#0a0810;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65}
+.page{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:28px 64px;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance}
+.latin{font-family:var(--f-latin);letter-spacing:.04em}
+.eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-family:var(--f-latin);font-weight:700}
+.lede{color:var(--muted);max-width:62ch;margin:0}
+section>header{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
+h2{font-size:clamp(22px,3vw,28px)}
+
+/* hero */
+.hero{display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line);padding-bottom:28px}
+.hero h1{font-size:clamp(32px,6vw,54px);font-weight:900;letter-spacing:.02em;line-height:1.15}
+.hero h1 .latin{display:block;font-size:.36em;color:var(--gold);font-weight:500;letter-spacing:.3em;margin-top:6px}
+
+/* legend */
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;color:var(--muted);margin-bottom:12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;background:var(--c);display:inline-block}
+
+/* tree */
+.tree-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;align-items:start}
+@media (max-width:1100px){.tree-layout{grid-template-columns:minmax(0,1fr)}}
+.tree-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px}
+.tree-sizer{position:relative}
+.tree{position:absolute;left:0;top:0;width:1180px;height:600px;transform-origin:0 0}
+.tree svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.band{fill:var(--faint)}
+.band-label{fill:var(--muted);font-size:12px;letter-spacing:.12em;font-family:var(--f-body)}
+.link{fill:none;stroke:var(--line);stroke-width:1.6;transition:stroke .2s,opacity .2s}
+.link.dash{stroke-dasharray:5 5}
+.link.on{stroke:var(--aegean);stroke-width:2.6}
+.link.dim{opacity:.25}
+.mate{fill:none;stroke:var(--rose);stroke-width:2.4;stroke-dasharray:3 5}
+.node{position:absolute;width:88px;height:76px;margin-left:-44px;border:1.5px solid color-mix(in srgb,var(--c) 55%,transparent);
+  border-top:5px solid var(--c);border-radius:10px;background:color-mix(in srgb,var(--c) 10%,var(--surface));
+  color:var(--ink);font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:2px;
+  transition:transform .15s,opacity .2s,box-shadow .2s}
+.node:hover{transform:translateY(-2px)}
+.node:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.node .g{font-size:20px;line-height:1.2}
+.node .zh{font-weight:700;font-size:14px;line-height:1.25}
+.node .en{font-family:var(--f-latin);font-size:10px;color:var(--muted);line-height:1.2}
+.node.dim{opacity:.32}
+.node.sel{box-shadow:0 0 0 4px color-mix(in srgb,var(--gold) 70%,transparent);opacity:1}
+.node.rel{opacity:1}
+.cat-pri{--c:var(--c-pri)} .cat-titan{--c:var(--c-titan)} .cat-oly{--c:var(--c-oly)} .cat-god{--c:var(--c-god)} .cat-mate{--c:var(--c-mate)}
+
+/* detail */
+.detail{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+@media (max-width:1100px){.detail{position:static}}
+.d-head{display:flex;gap:14px;align-items:center}
+.d-glyph{font-size:40px;width:64px;height:64px;display:grid;place-items:center;border-radius:14px;background:color-mix(in srgb,var(--c) 14%,var(--surface));flex:none}
+.d-head h3{font-size:26px;line-height:1.2}
+.d-sub{font-size:13px;color:var(--muted)}
+.tag{display:inline-block;font-size:12px;padding:1px 9px;border-radius:999px;background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c);font-weight:700}
+.d-role{font-family:var(--f-display);font-size:19px;font-weight:600;color:var(--c);line-height:1.4}
+.d-row{display:grid;grid-template-columns:5.2em 1fr;gap:8px;font-size:14px}
+.d-row b{color:var(--muted);font-weight:500}
+.d-story{font-size:14px;margin:0;padding:10px 12px;background:var(--faint);border-radius:10px}
+.d-note{font-size:12px;color:var(--muted);margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:13px;padding:2px 10px;border-radius:999px;cursor:pointer}
+.chip:hover{border-color:var(--aegean);color:var(--aegean)}
+.chip:focus-visible{outline:2px solid var(--gold)}
+.hint{font-size:13px;color:var(--muted);margin:10px 0 0}
+
+/* realms */
+.realms{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px;align-items:stretch}
+@media (max-width:800px){.realms{grid-template-columns:minmax(0,1fr)}}
+.strata{border-radius:16px;overflow:hidden;display:flex;flex-direction:column;border:1px solid var(--line)}
+.stratum{padding:18px 20px;display:flex;gap:16px;align-items:center;cursor:pointer;border:0;font:inherit;text-align:left;width:100%}
+.stratum .g{font-size:38px;flex:none}
+.stratum h3{font-size:20px}
+.stratum p{margin:0;font-size:14px;opacity:.9}
+.stratum:focus-visible{outline:3px solid var(--gold);outline-offset:-3px}
+.s-sky{background:linear-gradient(180deg,var(--sky2),var(--sky1));color:var(--ink);min-height:130px}
+.s-earth{background:var(--surface);color:var(--ink);border-block:1px solid var(--line)!important;cursor:default}
+.s-sea{background:linear-gradient(180deg,var(--sea1),var(--sea2));color:#eef5ff;min-height:130px}
+.s-und{background:linear-gradient(180deg,var(--und1),var(--und2));color:#e9e3f5;min-height:130px}
+.realm-story{display:flex;flex-direction:column;gap:12px;font-size:15px}
+.realm-story p{margin:0}
+.realm-story .callout{border-left:3px solid var(--gold);padding-left:12px;color:var(--muted)}
+
+/* who does what */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:44px 1fr;gap:4px 12px;cursor:pointer;text-align:left;font:inherit;color:var(--ink);transition:border-color .15s,transform .15s}
+.card:hover{border-color:var(--c);transform:translateY(-2px)}
+.card:focus-visible{outline:3px solid var(--gold)}
+.card .g{font-size:30px;grid-row:span 3;align-self:start}
+.card .job{font-family:var(--f-display);font-weight:600;font-size:16px;color:var(--c);line-height:1.35}
+.card .nm{font-weight:700}
+.card .nm span{font-family:var(--f-latin);font-weight:500;font-size:12px;color:var(--muted);margin-left:4px}
+.card .rm{font-size:12px;color:var(--muted)}
+
+/* quiz */
+.quiz{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;max-width:760px}
+.q-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.q-score{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px}
+.q-clue{font-family:var(--f-display);font-size:20px;line-height:1.5;margin:0}
+.q-opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.q-opts{grid-template-columns:minmax(0,1fr)}}
+.opt{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:16px;padding:10px 12px;border-radius:10px;cursor:pointer;text-align:left}
+.opt:hover:not(:disabled){border-color:var(--aegean)}
+.opt:focus-visible{outline:3px solid var(--gold)}
+.opt.right{border-color:var(--c-god);background:color-mix(in srgb,var(--c-god) 14%,var(--surface))}
+.opt.wrong{border-color:var(--rose);background:color-mix(in srgb,var(--rose) 12%,var(--surface))}
+.q-feedback{min-height:1.6em;margin:0;font-size:14px}
+.btn{align-self:flex-start;background:var(--aegean);color:var(--surface);border:0;border-radius:10px;padding:9px 18px;font:inherit;font-weight:700;cursor:pointer}
+.btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:18px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header class="hero">
+    <div class="eyebrow">Greek Mythology · 给孩子的众神图</div>
+    <h1>奥林匹斯众神家谱<span class="latin">The Gods of Olympus</span></h1>
+    <p class="lede">古希腊人相信，世界上的每件事都有一位神在管：打雷归宙斯，大海归波塞冬，种庄稼归得墨忒耳。这一页把众神的家族关系和各自的“工作”画在一起。点一点任何一位神，看看 TA 的爸爸妈妈、兄弟姐妹和孩子是谁。</p>
+  </header>
+
+  <section id="tree">
+    <header>
+      <div class="eyebrow">Family Tree</div>
+      <h2>众神家谱：从大地到奥林匹斯山</h2>
+    </header>
+    <div class="legend">
+      <span class="cat-pri"><i></i>太初神（最早的神）</span>
+      <span class="cat-titan"><i></i>泰坦神（巨神）</span>
+      <span class="cat-oly"><i></i>奥林匹斯主神</span>
+      <span class="cat-god"><i></i>其他重要的神</span>
+      <span class="cat-mate"><i></i>宙斯孩子的妈妈</span>
+    </div>
+    <div class="tree-layout">
+      <div class="tree-wrap" id="treeWrap">
+        <div class="tree-sizer" id="treeSizer">
+          <div class="tree" id="treeInner">
+            <svg id="treeSvg" viewBox="0 0 1180 600" aria-hidden="true"></svg>
+          </div>
+        </div>
+      </div>
+      <aside class="detail" id="detail" aria-live="polite"></aside>
+    </div>
+    <p class="hint">蓝线连接父母和孩子，粉色虚线连接夫妻。虚线的蓝线表示“另一种说法”。在手机上可以左右滑动家谱。</p>
+  </section>
+
+  <section id="realms">
+    <header>
+      <div class="eyebrow">Three Realms</div>
+      <h2>三兄弟分天下</h2>
+    </header>
+    <div class="realms">
+      <div class="strata">
+        <button class="stratum s-sky" data-god="zeus" type="button"><span class="g">⚡</span><div><h3>天空 · 宙斯</h3><p>住在奥林匹斯山顶，掌管天空、雷电和众神。</p></div></button>
+        <div class="stratum s-earth"><span class="g">⛰️</span><div><h3>大地与奥林匹斯山</h3><p>大家共享。得墨忒耳让庄稼生长，赫斯提亚守护家里的炉火。</p></div></div>
+        <button class="stratum s-sea" data-god="poseidon" type="button"><span class="g">🔱</span><div><h3>大海 · 波塞冬</h3><p>掌管所有的海洋、风暴和地震。</p></div></button>
+        <button class="stratum s-und" data-god="hades" type="button"><span class="g">🐕</span><div><h3>冥界 · 哈迪斯</h3><p>地底下的世界，由三头犬刻耳柏洛斯看门。</p></div></button>
+      </div>
+      <div class="realm-story">
+        <p>泰坦之王克洛诺斯害怕孩子抢走王位，孩子一出生就被他吞进肚子。妈妈瑞亚把最小的宙斯藏了起来，用一块包着布的石头骗过了克洛诺斯。</p>
+        <p>宙斯长大后，让父亲把哥哥姐姐们都吐了出来。他们一起和泰坦打了十年大战，最后赢了。</p>
+        <p>胜利之后，宙斯、波塞冬、哈迪斯三兄弟<strong>抽签</strong>分世界：宙斯抽到天空，波塞冬抽到大海，哈迪斯抽到冥界。</p>
+        <p class="callout">想一想：为什么哈迪斯不算“奥林匹斯十二主神”？因为他一直住在冥界，不住在奥林匹斯山上。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="jobs">
+    <header>
+      <div class="eyebrow">Who Does What</div>
+      <h2>谁管什么？</h2>
+      <p class="lede">每张卡片上：彩色大字是这位神的“工作”，下面是希腊名字和罗马名字。很多行星和英文单词都来自罗马名字。点卡片可以在家谱里找到 TA。</p>
+    </header>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section id="quiz">
+    <header>
+      <div class="eyebrow">Quiz</div>
+      <h2>猜猜我是谁</h2>
+    </header>
+    <div class="quiz">
+      <div class="q-top"><span class="d-sub" id="qNum"></span><span class="q-score" id="qScore"></span></div>
+      <p class="q-clue" id="qClue"></p>
+      <div class="q-opts" id="qOpts"></div>
+      <p class="q-feedback" id="qFb"></p>
+      <button class="btn" id="qNext" type="button">下一题</button>
+    </div>
+  </section>
+
+  <footer>故事主要依据赫西俄德《神谱》和荷马史诗。古希腊神话有很多版本，同一位神的父母有时说法不同，页面中已注明。“十二主神”的名单也有两种：有时是赫斯提亚，有时是狄俄尼索斯。</footer>
+</div>
+
+<script>
+const ROWS=[30,180,335,500], NODE_H=76, W=1180;
+const BANDS=[["太初神",0],["泰坦神",1],["克洛诺斯的孩子 · 宙斯孩子的妈妈",2],["下一代神",3]];
+const CAT={pri:"太初神",titan:"泰坦神",oly:"奥林匹斯主神",god:"重要的神",mate:"宙斯孩子的妈妈"};
+const G={
+ gaia:{zh:"盖亚",en:"Gaia",g:"🌍",cat:"pri",r:0,x:560,role:"大地之母",sym:"大地本身",roman:"Terra",trace:"geo-（geography 地理）",story:"世界最早的神之一，她就是大地。她和天空之神乌拉诺斯生下了泰坦巨神。",mates:["uranus"]},
+ uranus:{zh:"乌拉诺斯",en:"Uranus",g:"🌌",cat:"pri",r:0,x:700,role:"天空之神（最早的）",sym:"星空",roman:"Uranus",trace:"天王星 Uranus",story:"最早统治世界的天空之神，后来被儿子克洛诺斯推翻。",mates:["gaia"]},
+ cronus:{zh:"克洛诺斯",en:"Cronus",g:"⏳",cat:"titan",r:1,x:560,p:["gaia","uranus"],role:"泰坦之王",sym:"镰刀",roman:"Saturn",trace:"土星 Saturn；星期六 Saturday",story:"他怕孩子抢王位，把刚出生的孩子都吞进肚子，最后被宙斯打败。",mates:["rhea"]},
+ rhea:{zh:"瑞亚",en:"Rhea",g:"🦁",cat:"titan",r:1,x:700,p:["gaia","uranus"],role:"众神之母",sym:"狮子拉的车、王冠",roman:"Ops",story:"她用一块包着布的石头骗过克洛诺斯，偷偷救下了小宙斯。",mates:["cronus"]},
+ mnemosyne:{zh:"谟涅摩叙涅",en:"Mnemosyne",g:"🧠",cat:"titan",r:1,x:1010,p:["gaia","uranus"],role:"记忆女神",sym:"记忆之泉",trace:"mnemonic（帮助记忆的口诀）",story:"她和宙斯生下了九位缪斯。古希腊人觉得，有了记忆才会有诗歌和故事。"},
+ metis:{zh:"墨提斯",en:"Metis",g:"💡",cat:"mate",r:2,x:60,role:"聪明与计谋",sym:"智慧",story:"宙斯的第一位妻子，雅典娜的妈妈。她的父母是海洋泰坦。"},
+ leto:{zh:"勒托",en:"Leto",g:"🌴",cat:"mate",r:2,x:170,role:"温柔的母亲",sym:"棕榈树",roman:"Latona",story:"赫拉不许任何土地收留她，最后她在漂浮的小岛提洛岛上，靠着一棵棕榈树生下了双胞胎。"},
+ maia:{zh:"迈亚",en:"Maia",g:"⭐",cat:"mate",r:2,x:280,role:"山林仙女",sym:"昴星团的星星",trace:"五月 May",story:"赫尔墨斯的妈妈，夜空中“七姐妹星团”里的一位。"},
+ hestia:{zh:"赫斯提亚",en:"Hestia",g:"🔥",cat:"oly",r:2,x:400,p:["cronus","rhea"],role:"炉火与家",sym:"炉火、水壶",roman:"Vesta",story:"最温和的女神，守护每家每户的炉火。据说她后来把奥林匹斯的座位让给了狄俄尼索斯。",note:"克洛诺斯的大女儿，第一个被吞下、最后一个被吐出来。"},
+ demeter:{zh:"得墨忒耳",en:"Demeter",g:"🌾",cat:"oly",r:2,x:510,p:["cronus","rhea"],role:"农业与丰收",sym:"麦穗、镰刀、火把",roman:"Ceres",trace:"谷神星 Ceres；麦片 cereal",story:"女儿珀耳塞福涅被带到冥界时，她伤心得让大地停止生长，于是世界上有了冬天。"},
+ zeus:{zh:"宙斯",en:"Zeus",g:"⚡",cat:"oly",r:2,x:620,p:["cronus","rhea"],role:"众神之王 · 天空与雷电",sym:"雷电、鹰、橡树",roman:"Jupiter",trace:"木星 Jupiter（太阳系最大的行星）",story:"他救出被父亲吞下的哥哥姐姐，带领大家打败泰坦，成为众神之王。他的孩子特别多。",mates:["hera"]},
+ hera:{zh:"赫拉",en:"Hera",g:"🦚",cat:"oly",r:2,x:730,p:["cronus","rhea"],role:"天后 · 婚姻与家庭",sym:"孔雀、王冠、石榴",roman:"Juno",trace:"六月 June；Hercules（意思是“赫拉的荣耀”）",story:"宙斯的妻子，嫉妒心很强，经常找宙斯其他孩子的麻烦，比如大力士赫拉克勒斯。",mates:["zeus"]},
+ poseidon:{zh:"波塞冬",en:"Poseidon",g:"🔱",cat:"oly",r:2,x:850,p:["cronus","rhea"],role:"大海 · 地震 · 马",sym:"三叉戟、马、海豚",roman:"Neptune",trace:"海王星 Neptune",story:"他生气时用三叉戟敲击大地，就会引发地震和海上风暴。马也是他创造的。"},
+ hades:{zh:"哈迪斯",en:"Hades",g:"🐕",cat:"god",r:2,x:960,p:["cronus","rhea"],role:"冥界之王",sym:"隐身头盔、三头犬",roman:"Pluto",trace:"冥王星 Pluto",story:"统治死者的世界，也掌管地下的宝石和矿藏。他住在冥界，所以不算奥林匹斯主神。",mates:["persephone"]},
+ semele:{zh:"塞墨勒",en:"Semele",g:"👸",cat:"mate",r:2,x:1120,role:"凡人公主",sym:"底比斯王冠",story:"她是凡人，不是神。她的儿子狄俄尼索斯后来成了神。"},
+ athena:{zh:"雅典娜",en:"Athena",g:"🦉",cat:"oly",r:3,x:60,p:["zeus","metis"],role:"智慧 · 策略 · 手工艺",sym:"猫头鹰、橄榄树、盾牌",roman:"Minerva",trace:"希腊首都雅典 Athens",story:"她穿着盔甲从宙斯的头里跳出来。她送给雅典人一棵橄榄树，这座城就用她的名字命名。"},
+ apollo:{zh:"阿波罗",en:"Apollo",g:"☀️",cat:"oly",r:3,x:160,p:["zeus","leto"],role:"光明 · 音乐 · 医药 · 预言",sym:"里拉琴、金弓、月桂",roman:"Apollo",trace:"NASA 阿波罗登月计划",story:"擅长音乐和射箭，在德尔斐神庙通过女祭司告诉人们未来会发生什么。"},
+ artemis:{zh:"阿耳忒弥斯",en:"Artemis",g:"🌙",cat:"oly",r:3,x:260,p:["zeus","leto"],role:"狩猎 · 月亮 · 野生动物",sym:"银弓、鹿、月亮",roman:"Diana",trace:"NASA 阿耳忒弥斯登月计划",story:"阿波罗的双胞胎姐姐，喜欢住在森林里，保护小动物和小孩子。"},
+ hermes:{zh:"赫尔墨斯",en:"Hermes",g:"✉️",cat:"oly",r:3,x:360,p:["zeus","maia"],role:"信使 · 旅行 · 商业",sym:"带翅膀的鞋和帽子、双蛇杖",roman:"Mercury",trace:"水星 Mercury（跑得最快的行星）",story:"出生第一天就偷走了阿波罗的牛，还用龟壳做出了第一把里拉琴。"},
+ persephone:{zh:"珀耳塞福涅",en:"Persephone",g:"🌸",cat:"god",r:3,x:490,p:["zeus","demeter"],role:"春天 · 冥后",sym:"石榴、鲜花",roman:"Proserpina",story:"她被哈迪斯带到冥界，吃了几颗石榴籽，所以每年要回冥界住几个月。她回到地上时，春天就来了。",mates:["hades"]},
+ ares:{zh:"阿瑞斯",en:"Ares",g:"⚔️",cat:"oly",r:3,x:600,p:["zeus","hera"],role:"战争（勇猛与狂暴）",sym:"长矛、头盔、秃鹫",roman:"Mars",trace:"火星 Mars；三月 March",story:"雅典娜代表打仗时的聪明，阿瑞斯代表打仗时的冲动和狂暴，所以连众神都不太喜欢他。"},
+ hephaestus:{zh:"赫菲斯托斯",en:"Hephaestus",g:"🔨",cat:"oly",r:3,x:700,p:["zeus","hera"],role:"火 · 锻造 · 工匠",sym:"锤子、铁砧、火炉",roman:"Vulcan",trace:"火山 volcano",story:"众神的铁匠，宙斯的雷电、众神的宫殿都是他造的。",note:"另一种说法：他是赫拉一个人生下的。",mates:["aphrodite"]},
+ aphrodite:{zh:"阿佛洛狄忒",en:"Aphrodite",g:"🌹",cat:"oly",r:3,x:800,p:["uranus"],alt:true,role:"爱与美",sym:"鸽子、玫瑰、扇贝",roman:"Venus",trace:"金星 Venus（夜空中最亮的行星）",story:"她从大海的泡沫中诞生，站在一只扇贝上漂到岸边。她嫁给了赫菲斯托斯。",note:"另一种说法（荷马）：她是宙斯和狄俄涅的女儿。",mates:["hephaestus"]},
+ dionysus:{zh:"狄俄尼索斯",en:"Dionysus",g:"🍇",cat:"oly",r:3,x:1010,p:["zeus","semele"],role:"葡萄 · 节庆 · 戏剧",sym:"葡萄藤、松果杖、豹子",roman:"Bacchus",trace:"古希腊戏剧诞生在他的节日上",story:"唯一一位妈妈是凡人的奥林匹斯神。有时他代替赫斯提亚，算在十二主神里。"},
+ muses:{zh:"缪斯",en:"The Muses",g:"🎭",cat:"god",r:3,x:1120,p:["zeus","mnemosyne"],role:"艺术与灵感（九姐妹）",sym:"书卷、乐器、面具",trace:"music 音乐、museum 博物馆",story:"九位姐妹，分别掌管史诗、历史、抒情诗、音乐、悲剧、颂歌、舞蹈、喜剧和天文。"}
+};
+const ids=Object.keys(G);
+ids.forEach(id=>{G[id].id=id;G[id].kids=[];G[id].mates=G[id].mates||[];});
+ids.forEach(id=>(G[id].p||[]).forEach(p=>G[p].kids.push(id)));
+function partners(id){const s=new Set(G[id].mates);G[id].kids.forEach(k=>(G[k].p||[]).forEach(p=>{if(p!==id)s.add(p)}));return[...s];}
+function siblings(id){const s=new Set();(G[id].p||[]).forEach(p=>G[p].kids.forEach(k=>{if(k!==id)s.add(k)}));return[...s];}
+
+const svg=document.getElementById("treeSvg"),inner=document.getElementById("treeInner"),NS="http://www.w3.org/2000/svg";
+function el(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+BANDS.forEach(([label,r])=>{const y=ROWS[r]-24;svg.appendChild(el("rect",{class:"band",x:0,y,width:W,height:NODE_H+34,rx:10}));const t=el("text",{class:"band-label",x:12,y:y+15});t.textContent=label;svg.appendChild(t);});
+const links=[];
+ids.forEach(id=>(G[id].p||[]).forEach(p=>{const a=G[p],b=G[id],y1=ROWS[a.r]+NODE_H,y2=ROWS[b.r],m=(y2-y1)*.5;
+  const path=el("path",{class:"link"+(b.alt?" dash":""),d:`M${a.x},${y1} C${a.x},${y1+m} ${b.x},${y2-m} ${b.x},${y2}`});svg.appendChild(path);links.push({p,c:id,path});}));
+const mateLayer=el("g",{});svg.appendChild(mateLayer);
+const nodes={};
+ids.forEach(id=>{const d=G[id],b=document.createElement("button");b.type="button";b.className="node cat-"+d.cat;b.style.left=d.x+"px";b.style.top=ROWS[d.r]+"px";
+  b.innerHTML=`<span class="g">${d.g}</span><span class="zh">${d.zh}</span><span class="en">${d.en}</span>`;b.setAttribute("aria-label",d.zh+" "+d.en);
+  b.onclick=()=>select(id);inner.appendChild(b);nodes[id]=b;});
+
+function chips(list){return list.length?`<div class="chips">${list.map(k=>`<button type="button" class="chip" data-god="${k}">${G[k].g} ${G[k].zh}</button>`).join("")}</div>`:`<span class="d-sub">（图中未画出）</span>`;}
+const detail=document.getElementById("detail");
+function select(id,scroll){const d=G[id],par=d.p||[],kids=d.kids,mates=partners(id),sibs=siblings(id);
+  const rel=new Set([id,...par,...kids,...mates,...sibs]);
+  ids.forEach(k=>{nodes[k].classList.toggle("sel",k===id);nodes[k].classList.toggle("dim",!rel.has(k));});
+  links.forEach(l=>{const on=l.p===id||l.c===id;l.path.classList.toggle("on",on);l.path.classList.toggle("dim",!on);});
+  mateLayer.innerHTML="";d.mates.forEach(m=>{const a=d,b=G[m];const ax=a.x,ay=ROWS[a.r]+NODE_H/2,bx=b.x,by=ROWS[b.r]+NODE_H/2;
+    const mx=(ax+bx)/2,my=Math.max(ay,by)+NODE_H/2+26;mateLayer.appendChild(el("path",{class:"mate",d:`M${ax},${ay+NODE_H/2} Q${mx},${my+20} ${bx},${by+NODE_H/2}`}));});
+  detail.className="detail cat-"+d.cat;
+  detail.innerHTML=`<div class="d-head"><div class="d-glyph">${d.g}</div><div><h3>${d.zh}</h3><div class="d-sub"><span class="latin">${d.en}</span>${d.roman&&d.roman!==d.en?` · 罗马名 <span class="latin">${d.roman}</span>`:""}</div><span class="tag">${CAT[d.cat]}</span></div></div>
+  <div class="d-role">${d.role}</div>
+  <div class="d-row"><b>标志</b><span>${d.sym}</span></div>
+  ${d.trace?`<div class="d-row"><b>今天还能看到</b><span>${d.trace}</span></div>`:""}
+  <p class="d-story">${d.story}</p>
+  ${d.note?`<p class="d-note">${d.note}</p>`:""}
+  <div class="d-row"><b>父母</b>${chips(par)}</div>
+  ${mates.length?`<div class="d-row"><b>配偶/伴侣</b>${chips(mates)}</div>`:""}
+  ${kids.length?`<div class="d-row"><b>孩子</b>${chips(kids)}</div>`:""}
+  ${sibs.length?`<div class="d-row"><b>兄弟姐妹</b>${chips(sibs)}</div>`:""}`;
+  detail.querySelectorAll(".chip").forEach(c=>c.onclick=()=>select(c.dataset.god));
+  if(scroll){document.getElementById("tree").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});}
+  const wrap=document.getElementById("treeWrap"),s=scale();const target=d.x*s-wrap.clientWidth/2;if(wrap.scrollWidth>wrap.clientWidth)wrap.scrollTo({left:target,behavior:"smooth"});
+}
+
+const wrap=document.getElementById("treeWrap"),sizer=document.getElementById("treeSizer");
+function scale(){return Math.max(.62,Math.min(1,(wrap.clientWidth-16)/W));}
+function fit(){const s=scale();inner.style.transform=`scale(${s})`;sizer.style.width=W*s+"px";sizer.style.height=600*s+"px";}
+fit();new ResizeObserver(fit).observe(wrap);
+
+// who does what
+const ORDER=["zeus","hera","poseidon","hades","demeter","hestia","athena","apollo","artemis","hermes","ares","hephaestus","aphrodite","dionysus","persephone","muses"];
+document.getElementById("grid").innerHTML=ORDER.map(id=>{const d=G[id];return `<button type="button" class="card cat-${d.cat}" data-god="${id}"><span class="g">${d.g}</span><span class="job">${d.role}</span><span class="nm">${d.zh}<span>${d.en}</span></span><span class="rm">罗马名 ${d.roman||"—"} · ${d.sym}</span></button>`;}).join("");
+document.querySelectorAll("[data-god]").forEach(b=>{if(!b.classList.contains("chip"))b.onclick=()=>select(b.dataset.god,true);});
+
+// quiz
+const POOL=ORDER.slice();let qi=0,score=0,cur,answered=false;const TOTAL=10;
+let deck=POOL.slice().sort(()=>Math.random()-.5).slice(0,TOTAL);
+function ask(){answered=false;cur=deck[qi];const d=G[cur];
+  const others=POOL.filter(k=>k!==cur).sort(()=>Math.random()-.5).slice(0,3);const opts=[cur,...others].sort(()=>Math.random()-.5);
+  document.getElementById("qNum").textContent=`第 ${qi+1} / ${TOTAL} 题`;document.getElementById("qScore").textContent=`得分 ${score}`;
+  document.getElementById("qClue").textContent=`我管的是“${d.role}”，我的标志是${d.sym}。我是谁？`;
+  document.getElementById("qFb").textContent="";document.getElementById("qNext").textContent=qi===TOTAL-1?"看成绩":"下一题";
+  const box=document.getElementById("qOpts");box.innerHTML=opts.map(k=>`<button type="button" class="opt" data-k="${k}">${G[k].g} ${G[k].zh} <span class="latin" style="font-size:12px;color:var(--muted)">${G[k].en}</span></button>`).join("");
+  box.querySelectorAll(".opt").forEach(o=>o.onclick=()=>{if(answered)return;answered=true;const ok=o.dataset.k===cur;if(ok)score++;
+    box.querySelectorAll(".opt").forEach(x=>{x.disabled=true;if(x.dataset.k===cur)x.classList.add("right");});if(!ok)o.classList.add("wrong");
+    document.getElementById("qScore").textContent=`得分 ${score}`;
+    document.getElementById("qFb").textContent=ok?`答对了！${G[cur].story}`:`是${G[cur].zh}。${G[cur].story}`;});
+}
+document.getElementById("qNext").onclick=()=>{
+  if(qi===TOTAL-1&&document.getElementById("qNext").textContent==="看成绩"){
+    document.getElementById("qClue").textContent=`答对 ${score} / ${TOTAL} 题。${score>=8?"你已经是奥林匹斯小专家了！":score>=5?"不错！再看看家谱，下次一定更好。":"去上面的卡片里逛一逛，再来挑战吧。"}`;
+    document.getElementById("qOpts").innerHTML="";document.getElementById("qFb").textContent="";document.getElementById("qNext").textContent="再玩一次";qi=TOTAL;return;}
+  if(qi>=TOTAL){qi=0;score=0;deck=POOL.slice().sort(()=>Math.random()-.5).slice(0,TOTAL);ask();return;}
+  qi++;ask();};
+ask();
+select("zeus");
+</script>
+</body>
+</html>
